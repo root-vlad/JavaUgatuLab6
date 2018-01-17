@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<courses>
+    <course id="1">
+        <name>Query XML with XPath and JDOM</name>
+        <price>0.0</price>
+    </course>
+    <course id="2">
+        <name>XPath and JDOM</name>
+        <price>0.0</price>
+    </course>
+    <course id="3">
+        <name>
+            <![CDATA[
+               characters & ? $ ^ with markup
+            ]]>
+        </name>
+        <price>12.0</price>
+    </course>
+</courses>
