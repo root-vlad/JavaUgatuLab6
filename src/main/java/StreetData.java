@@ -5,12 +5,26 @@ import java.util.Set;
  * Created by vgorokhov on 17.01.2018.
  */
 public class StreetData {
-    private long id;
+    private String name;
     private int count = 0;
     private Set<String> classRoutes = new HashSet<String>();
 
-    StreetData(long id){
-        this.id = id;
+    StreetData (String name){
+        this.name = name;
+    }
+
+    public void printClasses(){
+        for (String s: classRoutes) {
+            System.out.println(s);
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getCount() {
+        return count;
     }
 
     public void addCount(){
@@ -18,6 +32,7 @@ public class StreetData {
     }
 
     public void addSegment(String classRoute){
-
+        classRoutes.add(classRoute);
+        addCount();
     }
 }

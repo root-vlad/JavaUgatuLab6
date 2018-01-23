@@ -19,4 +19,20 @@ public class StAX_and_JAXBTest {
     public void readFileStAX() throws Exception {
         stAX_and_jaxb.readFileStAX();
     }
+
+    @Test
+    public void readStreets(){
+        stAX_and_jaxb.readFileStAX();
+
+        for (StreetData sd : stAX_and_jaxb.streets.values()){
+            System.out.println("Найдена улица: " +  sd.getName());
+            System.out.println("Данная улица имеет " + sd.getCount() + " классов дорог:");
+            sd.printClasses();
+            System.out.println("===============================================");
+            System.out.println();
+        }
+
+    }
+
+
 }

@@ -20,13 +20,15 @@ import java.util.TreeMap;
  * Created by vgorokhov on 03.01.2018.
  */
 public class StAX_and_JAXB {
-//    String fileName = "C:\\Users\\vgorokhov\\IdeaProjects\\JavaUgatuLab6\\files\\UfaCenter.xml";
-    String fileName = "C:\\Users\\vgorokhov\\IdeaProjects\\JavaUgatuLab6\\files\\UfaCenterSmall.xml";
+    String fileName = "C:\\Users\\vgorokhov\\IdeaProjects\\JavaUgatuLab6\\files\\UfaCenter.xml";
+//    String fileName = "C:\\Users\\vgorokhov\\IdeaProjects\\JavaUgatuLab6\\files\\UfaCenterSmall.xml";
     String schemaName = "C:\\Users\\vgorokhov\\IdeaProjects\\JavaUgatuLab6\\files\\osm.xsd";
 
     Map<String, StreetData> streets = new TreeMap<String, StreetData>();
+    StreetData streetData;
+    String currentClassStreet;
     boolean flagNode = false, flagBusStop = false, flagWay = false, flagStreet = false;
-
+    private String nameStreet = "";
 
 
     public boolean checkXMLSchema(){
@@ -54,8 +56,7 @@ public class StAX_and_JAXB {
                         searchBusStop(xmlStreamReader);
                         searchWay(xmlStreamReader);
                     }
-                    if (xmlStreamReader.hasText()) //System.out.println("Text " + i + " = " + xmlStreamReader.getText());
-                    myWait();
+//                    myWait();
                 }
             } else {
                 System.out.println("ВАЛИДАЦИЯ ПРОВАЛЕНА");
@@ -82,16 +83,16 @@ public class StAX_and_JAXB {
         }
         if (xsr.getLocalName().equals("Node") && xsr.isEndElement()){
             flagNode = false;
+            flagBusStop = false;
         }
         if (xsr.getLocalName().equals("tag") && xsr.isStartElement()) {
             if (xsr.getAttributeValue("", "k").equals("highway") && xsr.getAttributeValue("", "v").equals("bus_stop")) {
                 flagBusStop = true;
             }
             if (flagBusStop && xsr.getAttributeValue("", "k").equals("name")) {
+//                System.out.println("");
+//                System.out.println("Найдена остановка: " + xsr.getAttributeValue("", "v"));
                 System.out.println("");
-                System.out.println("Найдена остановка: " + xsr.getAttributeValue("", "v"));
-                System.out.println("");
-                flagBusStop = false;
             }
         }
     }
@@ -100,27 +101,30 @@ public class StAX_and_JAXB {
 
     public void searchWay(XMLStreamReader xsr) throws XMLStreamException {
         if (xsr.getLocalName().equals("way") && xsr.isStartElement()) {
-            System.out.println("6666666666");
-
             flagWay = true;
+            flagStreet = false;
         }
-        if (xsr.getLocalName().equals("way") && xsr.isEndElement()){
-            System.out.println("9999999999");
 
+        if (xsr.getLocalName().equals("way") && xsr.isEndElement()){
+            if (streets.containsKey(nameStreet)){
+                streets.get(nameStreet).addSegment(currentClassStreet);
+            }else {
+                streetData = new StreetData(nameStreet);
+                streetData.addSegment(currentClassStreet);
+                streets.put(nameStreet, streetData);
+            }
             flagWay = false;
-            System.out.println();
         }
 
             if (xsr.getLocalName().equals("tag") && xsr.isStartElement() && flagWay) {
                 if (xsr.getAttributeValue("", "k").equals("highway")) {
-
+//                    streetData = new StreetData();
+                    currentClassStreet = xsr.getAttributeValue("", "v");
+//                    streetData.addSegment(xsr.getAttributeValue("", "v"));
                     flagStreet = true;
                 }
-                if (flagStreet && xsr.getAttributeValue("", "k").equals("name")) {
-//                    System.out.println("");
-                    System.out.println("Найдена улица: " + xsr.getAttributeValue("", "v"));
-//                    System.out.println("");
-                    flagStreet = false;
+                if (xsr.getAttributeValue("", "k").equals("name")) {
+                    nameStreet = xsr.getAttributeValue("", "v");
                 }
             }
 
