@@ -1,5 +1,9 @@
 import org.xml.sax.SAXException;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -129,6 +133,39 @@ public class StAX_and_JAXB {
             }
 
 
+    }
+
+
+
+    public Object getObject() throws JAXBException {//, Class<?> c) throws JAXBException {
+        JAXBContext context = JAXBContext.newInstance("generated");//c);
+        Unmarshaller unmarshaller = context.createUnmarshaller();
+        Object object = unmarshaller.unmarshal(new File(fileName));
+
+        return object;
+    }
+
+
+    void unmarshal() throws JAXBException,SAXException {
+        JAXBContext jxc =
+                JAXBContext.newInstance();
+        //  JAXBContext.newInstance(ObjectFactory.class);
+
+        Unmarshaller u = jxc.createUnmarshaller();
+
+
+        //    StreamSource ss = new StreamSource("test.xsd");
+        //    SchemaFactory sf = SchemaFactory.newInstance(
+        //           XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        // читаем схему из файла
+        //    Schema schema = sf.newSchema(ss);
+        //    u.setSchema(schema);
+
+        JAXBElement je = (JAXBElement)
+                u.unmarshal(new File(fileName));
+
+//        price=(PriceType) je.getValue();
+        System.out.println(je.getValue());
     }
 
 

@@ -1,5 +1,8 @@
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import javax.xml.bind.JAXBException;
 
 import static org.junit.Assert.*;
 
@@ -32,6 +35,18 @@ public class StAX_and_JAXBTest {
             System.out.println();
         }
 
+    }
+
+    @Test
+    public void jaxbUnmarshaler(){
+        try {
+            stAX_and_jaxb.unmarshal();
+//            stAX_and_jaxb.getObject();
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            e.printStackTrace();
+        }
     }
 
 
