@@ -1,3 +1,4 @@
+import generated.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.bind.JAXBContext;
@@ -7,6 +8,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -137,35 +139,39 @@ public class StAX_and_JAXB {
 
 
 
-    public Object getObject() throws JAXBException {//, Class<?> c) throws JAXBException {
-        JAXBContext context = JAXBContext.newInstance("generated");//c);
-        Unmarshaller unmarshaller = context.createUnmarshaller();
-        Object object = unmarshaller.unmarshal(new File(fileName));
-
-        return object;
-    }
+//    public Object getObject() throws JAXBException {
+//        JAXBContext context = JAXBContext.newInstance("generated");
+//        Unmarshaller unmarshaller = context.createUnmarshaller();
+//        Object object = unmarshaller.unmarshal(new File(fileName));
+//
+//        return object;
+//    }
 
 
     void unmarshal() throws JAXBException,SAXException {
-        JAXBContext jxc =
-                JAXBContext.newInstance();
-        //  JAXBContext.newInstance(ObjectFactory.class);
+// JAXBContext jxc = JAXBContext.newInstance(Osm.class);
+// JAXBContext jxc = JAXBContext.newInstance(OsmBasicType.class);
+        JAXBContext jxc = JAXBContext.newInstance("generated");
+
+// JAXBContext.newInstance(ObjectFactory.class);
 
         Unmarshaller u = jxc.createUnmarshaller();
 
+        Source source = new StreamSource(schemaName);
+// SchemaFactory sf = SchemaFactory.newInstance(
+// XMLConstants.W3C_XML_SCHEMA_NS_URI);
+// читаем схему из файла
+// Schema schema = sf.newSchema(ss);
+// u.setSchema(schema);
 
-        //    StreamSource ss = new StreamSource("test.xsd");
-        //    SchemaFactory sf = SchemaFactory.newInstance(
-        //           XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        // читаем схему из файла
-        //    Schema schema = sf.newSchema(ss);
-        //    u.setSchema(schema);
+        JAXBElement<Osm> je = (JAXBElement) u.unmarshal(source, Osm.class);
 
-        JAXBElement je = (JAXBElement)
-                u.unmarshal(new File(fileName));
+        Osm osm = je.getValue();
+        System.out.println(je.getDeclaredType());
+        System.out.println(je.getValue().toString());
+        System.out.println(osm.getBoundOrUserOrPreferences());
 
-//        price=(PriceType) je.getValue();
-        System.out.println(je.getValue());
+
     }
 
 
