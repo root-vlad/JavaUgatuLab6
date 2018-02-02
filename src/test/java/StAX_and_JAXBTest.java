@@ -1,3 +1,4 @@
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -40,8 +41,13 @@ public class StAX_and_JAXBTest {
     @Test
     public void jaxbUnmarshaler(){
         try {
+            stAX_and_jaxb.readFileStAX();
             stAX_and_jaxb.unmarshal();
-//            stAX_and_jaxb.getObject();
+
+            Assert.assertEquals(stAX_and_jaxb.streets.size(), stAX_and_jaxb.streetsJAXB.size());
+            Assert.assertEquals(stAX_and_jaxb.streets, stAX_and_jaxb.streetsJAXB);
+//
+//            Assert.assertEquals(stAX_and_jaxb.streets.size(), stAX_and_jaxb.streetsJAXB.size());
         } catch (JAXBException e) {
             e.printStackTrace();
         } catch (SAXException e) {

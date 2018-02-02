@@ -1,10 +1,13 @@
 import generated.*;
+import generated.Node;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.soap.*;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -17,10 +20,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by vgorokhov on 03.01.2018.
@@ -31,6 +32,7 @@ public class StAX_and_JAXB {
     String schemaName = "C:\\Users\\vgorokhov\\IdeaProjects\\JavaUgatuLab6\\files\\osm.xsd";
 
     Map<String, StreetData> streets = new TreeMap<String, StreetData>();
+    Map<String, StreetData> streetsJAXB = new TreeMap<String, StreetData>();
     StreetData streetData;
     String currentClassStreet;
     boolean flagNode = false, flagBusStop = false, flagWay = false, flagStreet = false;
@@ -108,10 +110,17 @@ public class StAX_and_JAXB {
     public void searchWay(XMLStreamReader xsr) throws XMLStreamException {
         if (xsr.getLocalName().equals("way") && xsr.isStartElement()) {
             flagWay = true;
-            flagStreet = false;
+
+            currentClassStreet=null;
+            nameStreet=null;
+        }
+        if (xsr.getLocalName().equals("way") && xsr.isEndElement()) {
+            flagWay = false;
+
         }
 
-        if (xsr.getLocalName().equals("way") && xsr.isEndElement()){
+        if (xsr.getLocalName().equals("way") && xsr.isEndElement() &&
+                currentClassStreet!=null && nameStreet!=null){
             if (streets.containsKey(nameStreet)){
                 streets.get(nameStreet).addSegment(currentClassStreet);
             }else {
@@ -119,7 +128,6 @@ public class StAX_and_JAXB {
                 streetData.addSegment(currentClassStreet);
                 streets.put(nameStreet, streetData);
             }
-            flagWay = false;
         }
 
             if (xsr.getLocalName().equals("tag") && xsr.isStartElement() && flagWay) {
@@ -127,7 +135,7 @@ public class StAX_and_JAXB {
 //                    streetData = new StreetData();
                     currentClassStreet = xsr.getAttributeValue("", "v");
 //                    streetData.addSegment(xsr.getAttributeValue("", "v"));
-                    flagStreet = true;
+
                 }
                 if (xsr.getAttributeValue("", "k").equals("name")) {
                     nameStreet = xsr.getAttributeValue("", "v");
@@ -135,45 +143,92 @@ public class StAX_and_JAXB {
             }
 
 
+
     }
 
 
 
-//    public Object getObject() throws JAXBException {
-//        JAXBContext context = JAXBContext.newInstance("generated");
-//        Unmarshaller unmarshaller = context.createUnmarshaller();
-//        Object object = unmarshaller.unmarshal(new File(fileName));
-//
-//        return object;
-//    }
-
-
     void unmarshal() throws JAXBException,SAXException {
-// JAXBContext jxc = JAXBContext.newInstance(Osm.class);
-// JAXBContext jxc = JAXBContext.newInstance(OsmBasicType.class);
         JAXBContext jxc = JAXBContext.newInstance("generated");
-
-// JAXBContext.newInstance(ObjectFactory.class);
-
         Unmarshaller u = jxc.createUnmarshaller();
 
-        Source source = new StreamSource(schemaName);
-// SchemaFactory sf = SchemaFactory.newInstance(
-// XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        Source source = new StreamSource(fileName);
+ SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 // читаем схему из файла
-// Schema schema = sf.newSchema(ss);
-// u.setSchema(schema);
+ Schema schema = sf.newSchema(new StreamSource(schemaName));
+ u.setSchema(schema);
 
         JAXBElement<Osm> je = (JAXBElement) u.unmarshal(source, Osm.class);
 
         Osm osm = je.getValue();
         System.out.println(je.getDeclaredType());
         System.out.println(je.getValue().toString());
-        System.out.println(osm.getBoundOrUserOrPreferences());
 
+        List<Node> nodes;
+        List<Way> ways;
 
+        nodes = (osm.getBoundOrUserOrPreferences().stream().filter((t) -> t.getClass()== Node.class).map((x) -> (Node) x).collect(Collectors.toList()));
+        ways = (osm.getBoundOrUserOrPreferences().stream().filter((t) -> t.getClass()== Way.class).map((x) -> (Way) x).collect(Collectors.toList()));
+
+        searchBusStopJAXB(nodes);
+        searchWayJAXB(ways);
     }
 
 
 
-}
+
+    public void searchWayJAXB(List<Way> ways)  {
+        for (Way way: ways) {
+            boolean highwayFlag = false;
+            boolean nameFlag = false;
+//            currentClassStreet="";
+//            nameStreet = "";
+            for (Tag tag : way.getRest().stream().filter((t) -> t.getClass()== Tag.class).map((x) -> (Tag) x).collect(Collectors.toList())) {
+                if (tag.getK().equals("highway")){
+                    currentClassStreet = tag.getV();
+                    highwayFlag = true;
+                }
+                if (tag.getK().equals("name")){
+                    nameStreet = tag.getV();
+                    nameFlag = true;
+                }
+            }
+
+            if (highwayFlag && nameFlag){
+                if (streetsJAXB.containsKey(nameStreet)){
+                    streetsJAXB.get(nameStreet).addSegment(currentClassStreet);
+                }else {
+                    streetData = new StreetData(nameStreet);
+                    streetData.addSegment(currentClassStreet);
+                    streetsJAXB.put(nameStreet, streetData);
+                }
+            }
+        }
+
+    }
+
+    public void searchBusStopJAXB(List<Node> nodes){
+        String nameBusStop = "";
+        for (Node node: nodes ) {
+            flagBusStop = false;
+            for (Tag tag: node.getTag()) {
+                if (tag.getK().equals("highway") && tag.getV().equals("bus_stop")) {
+                    flagBusStop = true;
+                }
+                if (tag.getK().equals("name")){
+                    nameBusStop = tag.getV();
+                }
+            }
+            if (flagBusStop){
+//                System.out.println("НАйдена остановка: " + nameBusStop);
+            }
+
+
+
+
+        }
+    }
+
+
+
+    }

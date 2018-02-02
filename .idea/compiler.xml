@@ -26,7 +26,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="JavaUgatuLab6" target="1.7" />
+      <module name="JavaUgatuLab6" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
